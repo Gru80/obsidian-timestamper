@@ -1,0 +1,17 @@
+# npm
+node_modules
+package-lock.json
+*.js
+
+# vscode
+.vscode
+
+# Intellij
+*.iml
+.idea
+
+# Exclude sourcemaps
+*.map
+
+# Obsidian saved settings
+data.json
