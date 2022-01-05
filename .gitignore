@@ -1,7 +1,7 @@
 # npm
 node_modules
 package-lock.json
-*.js
+main.js
 
 # vscode
 .vscode

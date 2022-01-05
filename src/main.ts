@@ -6,10 +6,9 @@ import {
 	Plugin,
 	TextComponent,
 	PluginSettingTab,
-	Setting
+	Setting,
+	moment
 } from 'obsidian';
-
-import dateFormat from 'dateformat';
 
 interface OtsPluginSettings {
 	timeStampFormat: string;
@@ -18,8 +17,8 @@ interface OtsPluginSettings {
 }
 
 const DEFAULT_SETTINGS: OtsPluginSettings = {
-	timeStampFormat: 'HH:MM:ss',
-	dateStampFormat: 'yyyy-mm-dd',
+	timeStampFormat: 'hh:mm:ss',
+	dateStampFormat: 'YYYY-MM-DD',
 	lastFormat: ''
 }
 
@@ -27,7 +26,7 @@ const DEFAULT_SETTINGS: OtsPluginSettings = {
 //               9 ... verbose output
 const logThreshold = 9;
 const logger = (logString: string, logLevel=0): void => {if (logLevel <= logThreshold) console.log ('TimeStamper: ' + logString)};
-const version = '1.0.0-1000'
+const version = '1.1.0-1000'
 
 export default class TimeStamperPlugin extends Plugin {
 	settings: OtsPluginSettings;
@@ -51,7 +50,7 @@ export default class TimeStamperPlugin extends Plugin {
 			name: 'Insert preconfigured time stamp',
 			editorCallback: (editor) => {
 				const now = new Date();
-				const stamp = dateFormat(now, this.settings.timeStampFormat);
+				const stamp = moment(now).format(this.settings.timeStampFormat);
 				editor.replaceSelection(stamp + '\n');
 			}
 		});
@@ -61,7 +60,7 @@ export default class TimeStamperPlugin extends Plugin {
 			name: 'Insert preconfigured date stamp',
 			editorCallback: (editor) => {
 				const now = new Date();
-				const stamp = dateFormat(now, this.settings.dateStampFormat);
+				const stamp = moment(now).format(this.settings.dateStampFormat);
 				editor.replaceSelection(stamp + '\n');
 			}
 		});
@@ -118,7 +117,7 @@ class TimeStamperModal extends Modal {
 		labelEl.setText('Format string:');
 
 		const formatComponent = new TextComponent(targetEl);
-		formatComponent.setPlaceholder('e.g. yyyy-mm-dd');
+		formatComponent.setPlaceholder('e.g. YYYY-MM-DD');
 		formatComponent.setValue(this.settings.lastFormat);
 		
 		// Create Button
@@ -135,7 +134,7 @@ class TimeStamperModal extends Modal {
 		submitButtonComponent.onClick(() => {
 			const now = new Date();
 			const stampFormat = formatComponent.getValue();
-			const stamp = dateFormat(now, stampFormat);
+			const stamp = moment(now).format(stampFormat);
 			editor.replaceSelection(stamp + '\n');
 			this.settings.lastFormat = stampFormat;
 			this.plugin.saveData(this.settings);
