@@ -1,3 +1,12 @@
+/* Changelog:
+ *
+ * V1.0.0 - Initial version
+ * V1.1.0 - Migrated from dateformat to moment.js
+ * V1.2.0 - Introduced option for linebreak after insert
+ * 
+ */
+
+import { settings } from 'cluster';
 import {
 	App,
 	ButtonComponent,
@@ -14,19 +23,21 @@ interface OtsPluginSettings {
 	timeStampFormat: string;
 	dateStampFormat: string;
 	lastFormat: string;
+	newLine: boolean;
 }
 
 const DEFAULT_SETTINGS: OtsPluginSettings = {
 	timeStampFormat: 'hh:mm:ss',
 	dateStampFormat: 'YYYY-MM-DD',
-	lastFormat: ''
+	lastFormat: '',
+	newLine: false
 }
 
 // logThreshold: 0 ... only error messages
 //               9 ... verbose output
 const logThreshold = 9;
 const logger = (logString: string, logLevel=0): void => {if (logLevel <= logThreshold) console.log ('TimeStamper: ' + logString)};
-const version = '1.1.0-1000'
+const version = '1.2.0-0001'
 
 export default class TimeStamperPlugin extends Plugin {
 	settings: OtsPluginSettings;
@@ -51,7 +62,14 @@ export default class TimeStamperPlugin extends Plugin {
 			editorCallback: (editor) => {
 				const now = new Date();
 				const stamp = moment(now).format(this.settings.timeStampFormat);
-				editor.replaceSelection(stamp + '\n');
+				if (this.settings.newLine) {
+					editor.replaceSelection(stamp + '\n');
+					logger('new line', 9);
+				}
+				else {
+					editor.replaceSelection(stamp);
+					logger('no new line');
+				}
 			}
 		});
 
@@ -61,7 +79,14 @@ export default class TimeStamperPlugin extends Plugin {
 			editorCallback: (editor) => {
 				const now = new Date();
 				const stamp = moment(now).format(this.settings.dateStampFormat);
-				editor.replaceSelection(stamp + '\n');
+				if (this.settings.newLine) {
+					editor.replaceSelection(stamp + '\n');
+					logger('new line', 9);
+				}
+				else {
+					editor.replaceSelection(stamp);
+					logger('no new line');
+				}
 			}
 		});
 
@@ -135,7 +160,15 @@ class TimeStamperModal extends Modal {
 			const now = new Date();
 			const stampFormat = formatComponent.getValue();
 			const stamp = moment(now).format(stampFormat);
-			editor.replaceSelection(stamp + '\n');
+			if (this.settings.newLine) {
+				editor.replaceSelection(stamp + '\n');
+				logger('new line', 9);
+			}
+			else {
+				editor.replaceSelection(stamp);
+				logger('no new line');
+			}
+			
 			this.settings.lastFormat = stampFormat;
 			this.plugin.saveData(this.settings);
 			this.close();			
@@ -191,5 +224,16 @@ class TimeStamperSettingTab extends PluginSettingTab {
 					this.plugin.settings.timeStampFormat = value;
 					await this.plugin.saveSettings();
 				}));
+
+		new Setting(containerEl)
+		    .setName('Insert line break')
+			.setDesc('Add a line break after the time/date stamp')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.newLine)
+				.onChange(async (value) => {
+					this.plugin.settings.newLine = value;
+					await this.plugin.saveSettings();
+				}));
+		
 	}
 }
