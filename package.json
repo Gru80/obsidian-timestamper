@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-timestamper",
-	"version": "1.2.0",
+	"version": "1.3.0",
 	"description": "An Obsidian plugin, which allows to insert customized time stamps at the current cursor position.",
 	"main": "build/main.js",
 	"scripts": {
