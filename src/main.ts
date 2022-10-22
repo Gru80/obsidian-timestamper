@@ -44,7 +44,7 @@ export default class TimeStamperPlugin extends Plugin {
 	settings: OtsPluginSettings;
 
 	async onload() {
-		logger('Loading Plugin v' + version, 9);
+		logger('Loading Plugin v' + version, 1);
 		await this.loadSettings();
 
 		this.addSettingTab(new TimeStamperSettingTab(this.app, this));
@@ -98,15 +98,15 @@ export default class TimeStamperPlugin extends Plugin {
 	}
 
 	async loadSettings() {
-		logger('Loading Settings...', 6);
+		logger('Loading Settings...', 5);
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-		logger('timeStampFormat: ' + this.settings.timeStampFormat, 9);
-		logger('dateStampFormat: ' + this.settings.dateStampFormat, 9);
-		logger('lastFormat:      ' + this.settings.lastFormat, 9);
+		logger('timeStampFormat: ' + this.settings.timeStampFormat, 6);
+		logger('dateStampFormat: ' + this.settings.dateStampFormat, 6);
+		logger('lastFormat:      ' + this.settings.lastFormat, 6);
 	}
 
 	async saveSettings() {
-		logger('Saving Settings...', 9);
+		logger('Saving Settings...', 5);
 		await this.saveData(this.settings);
 	}
 
@@ -128,7 +128,24 @@ class TimeStamperModal extends Modal {
 		const { contentEl, editor, modalEl } = this;
 		const rowClass = 'row';
 		const divClass = 'div';
-		let _this = this;
+		const _this = this;
+		const doStamp = (): void => {
+			const now = new Date();
+				const stampFormat = formatComponent.getValue();
+				const stamp = moment(now).format(stampFormat);
+				if (_this.settings.newLine) {
+					editor.replaceSelection(stamp + '\n');
+					logger('new line', 9);
+				}
+				else {
+					editor.replaceSelection(stamp);
+					logger('no new line', 9);
+				}
+				
+				_this.settings.lastFormat = stampFormat;
+				_this.plugin.saveData(_this.settings);
+				_this.close();	
+		};
 
 		modalEl.addClass('timestamper-modal');
 	
@@ -146,6 +163,11 @@ class TimeStamperModal extends Modal {
 		const formatComponent = new TextComponent(targetEl);
 		formatComponent.setPlaceholder('e.g. YYYY-MM-DD');
 		formatComponent.setValue(this.settings.lastFormat);
+
+		// Add listener for <Enter> key
+		formatComponent.inputEl.addEventListener('keypress', (keypressed) => {
+			if (keypressed.key === 'Enter')	doStamp(); 
+		});
 		
 		// Create Button
 		const buttonContainerEl = document.createElement(divClass);
@@ -155,44 +177,10 @@ class TimeStamperModal extends Modal {
 		submitButtonTarget.addClass('button-wrapper');
 
 		const submitButtonComponent = new ButtonComponent(submitButtonTarget);
-	
 		submitButtonComponent.setButtonText('Insert Date/Time Stamp');
 		submitButtonComponent.setCta();
-		submitButtonComponent.onClick(() => {
-			const now = new Date();
-			const stampFormat = formatComponent.getValue();
-			const stamp = moment(now).format(stampFormat);
-			if (this.settings.newLine) {
-				editor.replaceSelection(stamp + '\n');
-				logger('new line', 9);
-			}
-			else {
-				editor.replaceSelection(stamp);
-				logger('no new line', 9);
-			}
-			
-			this.settings.lastFormat = stampFormat;
-			this.plugin.saveData(this.settings);
-			this.close();			
-		});
-
-		formatComponent.inputEl.addEventListener('keypress', function (keypressed) {
-				const now = new Date();
-				const stampFormat = formatComponent.getValue();
-				const stamp = moment(now).format(stampFormat);
-				if (_this.settings.newLine) {
-					editor.replaceSelection(stamp + '\n');
-					logger('new line', 9);
-				}
-				else {
-					editor.replaceSelection(stamp);
-					logger('no new line', 9);
-				}
-				
-				_this.settings.lastFormat = stampFormat;
-				_this.plugin.saveData(_this.settings);
-				_this.close();			
-		});
+		submitButtonComponent.onClick(doStamp);
+		// submitButtonComponent.buttonEl.addEventListener('click', (e) => doStamp)
 		
 		// Add components to layout
 		containerEl.appendChild(labelEl);
@@ -229,7 +217,7 @@ class TimeStamperSettingTab extends PluginSettingTab {
 			.addText(text => text
 				.setValue(this.plugin.settings.dateStampFormat)
 				.onChange(async (value) => {
-					logger('Settings update: ' + value, 9);
+					logger('Settings update: ' + value, 5);
 					this.plugin.settings.dateStampFormat = value;
 					await this.plugin.saveSettings();
 				}));
@@ -240,7 +228,7 @@ class TimeStamperSettingTab extends PluginSettingTab {
 			.addText(text => text
 				.setValue(this.plugin.settings.timeStampFormat)
 				.onChange(async (value) => {
-					logger('Settings update: ' + value, 9);
+					logger('Settings update: ' + value, 5);
 					this.plugin.settings.timeStampFormat = value;
 					await this.plugin.saveSettings();
 				}));
@@ -254,6 +242,5 @@ class TimeStamperSettingTab extends PluginSettingTab {
 					this.plugin.settings.newLine = value;
 					await this.plugin.saveSettings();
 				}));
-		
 	}
 }
