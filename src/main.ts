@@ -17,7 +17,8 @@ import {
 	TextComponent,
 	PluginSettingTab,
 	Setting,
-	moment
+	moment,
+	View
 } from 'obsidian';
 
 interface OtsPluginSettings {
@@ -38,14 +39,16 @@ const DEFAULT_SETTINGS: OtsPluginSettings = {
 //               9 ... verbose output
 const logThreshold = 9;
 const logger = (logString: string, logLevel=0): void => {if (logLevel <= logThreshold) console.log ('TimeStamper: ' + logString)};
-const version = '1.3.0-0001'
+const version = '1.3.0-0002'
 
 export default class TimeStamperPlugin extends Plugin {
 	settings: OtsPluginSettings;
 
 	async onload() {
 		logger('Loading Plugin v' + version, 1);
+		logger('Loading Settings... ', 5);
 		await this.loadSettings();
+		logger('  Done', 5);
 
 		this.addSettingTab(new TimeStamperSettingTab(this.app, this));
 
@@ -56,6 +59,7 @@ export default class TimeStamperPlugin extends Plugin {
 				new TimeStamperModal(this.app, editor, this.settings, this).open();
 			},
 		});
+		
 
 		this.addCommand({
 			id: 'obsidian-fast-timestamp',
@@ -90,7 +94,6 @@ export default class TimeStamperPlugin extends Plugin {
 				}
 			}
 		});
-
 	}
 
 	onunload() {
@@ -100,14 +103,15 @@ export default class TimeStamperPlugin extends Plugin {
 	async loadSettings() {
 		logger('Loading Settings...', 5);
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-		logger('timeStampFormat: ' + this.settings.timeStampFormat, 6);
-		logger('dateStampFormat: ' + this.settings.dateStampFormat, 6);
-		logger('lastFormat:      ' + this.settings.lastFormat, 6);
+		logger('  - timeStampFormat: ' + this.settings.timeStampFormat, 6);
+		logger('  - dateStampFormat: ' + this.settings.dateStampFormat, 6);
+		logger('  - lastFormat:      ' + this.settings.lastFormat, 6);
 	}
 
 	async saveSettings() {
 		logger('Saving Settings...', 5);
 		await this.saveData(this.settings);
+		logger('  Done.');
 	}
 
 }
@@ -131,20 +135,26 @@ class TimeStamperModal extends Modal {
 		const _this = this;
 		const doStamp = (): void => {
 			const now = new Date();
-				const stampFormat = formatComponent.getValue();
-				const stamp = moment(now).format(stampFormat);
-				if (_this.settings.newLine) {
-					editor.replaceSelection(stamp + '\n');
-					logger('new line', 9);
-				}
-				else {
-					editor.replaceSelection(stamp);
-					logger('no new line', 9);
-				}
-				
-				_this.settings.lastFormat = stampFormat;
-				_this.plugin.saveData(_this.settings);
-				_this.close();	
+			const stampFormat = formatComponent.getValue();
+			const stamp = moment(now).format(stampFormat);
+			if (_this.settings.newLine) {
+				editor.replaceSelection(stamp + '\n');
+				logger('new line', 9);
+			}
+			else {
+				editor.replaceSelection(stamp);
+				logger('no new line', 9);
+			}
+			
+			// Save entered stamp format to settings
+			_this.settings.lastFormat = stampFormat;
+			_this.plugin.saveData(_this.settings);
+			_this.close();
+
+			editor.scrollIntoView({
+				from: editor.getCursor(),
+				to: editor.getCursor(),
+				})
 		};
 
 		modalEl.addClass('timestamper-modal');
@@ -217,7 +227,7 @@ class TimeStamperSettingTab extends PluginSettingTab {
 			.addText(text => text
 				.setValue(this.plugin.settings.dateStampFormat)
 				.onChange(async (value) => {
-					logger('Settings update: ' + value, 5);
+					logger('Settings update - Date Stamp: ' + value, 5);
 					this.plugin.settings.dateStampFormat = value;
 					await this.plugin.saveSettings();
 				}));
@@ -228,7 +238,7 @@ class TimeStamperSettingTab extends PluginSettingTab {
 			.addText(text => text
 				.setValue(this.plugin.settings.timeStampFormat)
 				.onChange(async (value) => {
-					logger('Settings update: ' + value, 5);
+					logger('Settings update - Time Stamp: ' + value, 5);
 					this.plugin.settings.timeStampFormat = value;
 					await this.plugin.saveSettings();
 				}));
@@ -239,6 +249,7 @@ class TimeStamperSettingTab extends PluginSettingTab {
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings.newLine)
 				.onChange(async (value) => {
+					logger('Settings update - Insert Line Break: ' + value, 5);
 					this.plugin.settings.newLine = value;
 					await this.plugin.saveSettings();
 				}));
