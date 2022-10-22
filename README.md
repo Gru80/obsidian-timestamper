@@ -10,6 +10,22 @@ Add time- or date stamps to your note:
 
 Desktop as well as mobile versions of Obsidian are supported.
 
+## Plugin Settings
+The plugin comes with some options for configuration:
+- A default template string for quick-insert of a time stamp (via command or configurable hot-key)
+- A default template string for quick-insert of a date stamp (via command or configurable hot-key)
+- An option to specify if a line-break should be added after the inserted time/date stamp automatically
+
+![PluginSettings](res/settings.png)
+
+## Hotkey Configuration
+Hot-Keys can be configured for in the Obsidian Hotkeys-Options Page for quick access to the following commands:
+- Open dialog to enter a custom time/date format string
+- Insert pre-defined time stamp
+- Insert pre-defined date stamp
+
+![Hotkeys](res/hotkeys.png)
+
 ## Format String
 The plugin uses moment.js which comes with Obsidian by default, hence all known tokens from moment.js can be used to create your customized time/date stamp:
 [Full ist of supported tokens](https://momentjscom.readthedocs.io/en/latest/moment/04-displaying/01-format/)
