@@ -3,6 +3,7 @@
  * V1.0.0 - Initial version
  * V1.1.0 - Migrated from dateformat to moment.js
  * V1.2.0 - Introduced option for linebreak after insert
+ * V1.3.0 - Enter-key in the text field closes the dialog and inserts time/date stamp
  * 
  */
 
@@ -37,7 +38,7 @@ const DEFAULT_SETTINGS: OtsPluginSettings = {
 //               9 ... verbose output
 const logThreshold = 9;
 const logger = (logString: string, logLevel=0): void => {if (logLevel <= logThreshold) console.log ('TimeStamper: ' + logString)};
-const version = '1.2.0-0001'
+const version = '1.3.0-0001'
 
 export default class TimeStamperPlugin extends Plugin {
 	settings: OtsPluginSettings;
@@ -68,7 +69,7 @@ export default class TimeStamperPlugin extends Plugin {
 				}
 				else {
 					editor.replaceSelection(stamp);
-					logger('no new line');
+					logger('no new line', 9);
 				}
 			}
 		});
@@ -85,7 +86,7 @@ export default class TimeStamperPlugin extends Plugin {
 				}
 				else {
 					editor.replaceSelection(stamp);
-					logger('no new line');
+					logger('no new line', 9);
 				}
 			}
 		});
@@ -127,6 +128,7 @@ class TimeStamperModal extends Modal {
 		const { contentEl, editor, modalEl } = this;
 		const rowClass = 'row';
 		const divClass = 'div';
+		let _this = this;
 
 		modalEl.addClass('timestamper-modal');
 	
@@ -166,12 +168,30 @@ class TimeStamperModal extends Modal {
 			}
 			else {
 				editor.replaceSelection(stamp);
-				logger('no new line');
+				logger('no new line', 9);
 			}
 			
 			this.settings.lastFormat = stampFormat;
 			this.plugin.saveData(this.settings);
 			this.close();			
+		});
+
+		formatComponent.inputEl.addEventListener('keypress', function (keypressed) {
+				const now = new Date();
+				const stampFormat = formatComponent.getValue();
+				const stamp = moment(now).format(stampFormat);
+				if (_this.settings.newLine) {
+					editor.replaceSelection(stamp + '\n');
+					logger('new line', 9);
+				}
+				else {
+					editor.replaceSelection(stamp);
+					logger('no new line', 9);
+				}
+				
+				_this.settings.lastFormat = stampFormat;
+				_this.plugin.saveData(_this.settings);
+				_this.close();			
 		});
 		
 		// Add components to layout
