@@ -26,13 +26,17 @@ interface OtsPluginSettings {
 	dateStampFormat: string;
 	lastFormat: string;
 	newLine: boolean;
+	makeBold: boolean;
+	extraString: string;
 }
 
 const DEFAULT_SETTINGS: OtsPluginSettings = {
 	timeStampFormat: 'hh:mm:ss',
 	dateStampFormat: 'YYYY-MM-DD',
 	lastFormat: '',
-	newLine: false
+	newLine: false,
+	makeBold: false,
+	extraString: ''
 }
 
 // logThreshold: 0 ... only error messages
@@ -67,12 +71,13 @@ export default class TimeStamperPlugin extends Plugin {
 			editorCallback: (editor) => {
 				const now = new Date();
 				const stamp = moment(now).format(this.settings.timeStampFormat);
+        const stampString = (this.settings.makeBold) ? ("**" + stamp + "**" + this.settings.extraString) : stamp + this.settings.extraString;
 				if (this.settings.newLine) {
-					editor.replaceSelection(stamp + '\n');
+					editor.replaceSelection(stampString + '\n');
 					logger('new line', 9);
 				}
 				else {
-					editor.replaceSelection(stamp);
+					editor.replaceSelection(stampString);
 					logger('no new line', 9);
 				}
 			}
@@ -84,12 +89,13 @@ export default class TimeStamperPlugin extends Plugin {
 			editorCallback: (editor) => {
 				const now = new Date();
 				const stamp = moment(now).format(this.settings.dateStampFormat);
+				const stampString = (this.settings.makeBold) ? ("**" + stamp + "**" + this.settings.extraString) : stamp + this.settings.extraString;
 				if (this.settings.newLine) {
-					editor.replaceSelection(stamp + '\n');
+					editor.replaceSelection(stampString + '\n');
 					logger('new line', 9);
 				}
 				else {
-					editor.replaceSelection(stamp);
+					editor.replaceSelection(stampString);
 					logger('no new line', 9);
 				}
 			}
@@ -137,12 +143,13 @@ class TimeStamperModal extends Modal {
 			const now = new Date();
 			const stampFormat = formatComponent.getValue();
 			const stamp = moment(now).format(stampFormat);
+			const stampString = (_this.settings.makeBold) ? ("**" + stamp + "**" + _this.settings.extraString) : stamp + _this.settings.extraString;
 			if (_this.settings.newLine) {
-				editor.replaceSelection(stamp + '\n');
+				editor.replaceSelection(stampString + '\n');
 				logger('new line', 9);
 			}
 			else {
-				editor.replaceSelection(stamp);
+				editor.replaceSelection(stampString);
 				logger('no new line', 9);
 			}
 			
@@ -253,5 +260,27 @@ class TimeStamperSettingTab extends PluginSettingTab {
 					this.plugin.settings.newLine = value;
 					await this.plugin.saveSettings();
 				}));
+
+		new Setting(containerEl)
+			.setName('Make bold')
+			.setDesc('Make time/date stamp bold')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.makeBold)
+				.onChange(async (value) => {
+					logger('Settings update - Make Bold: ' + value, 5);
+					this.plugin.settings.makeBold = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Extra String')
+			.setDesc('Add extra string after time/date stamp')
+			.addText(text => text
+				.setValue(this.plugin.settings.extraString)
+				.onChange(async (value) => {
+					logger('Settings update - Extra String: ' + value, 5);
+					this.plugin.settings.extraString = value;
+					await this.plugin.saveSettings();
+		}));
 	}
 }
