@@ -26,13 +26,15 @@ interface OtsPluginSettings {
 	dateStampFormat: string;
 	lastFormat: string;
 	newLine: boolean;
+	indentAfterNewLine: boolean;
 }
 
 const DEFAULT_SETTINGS: OtsPluginSettings = {
 	timeStampFormat: 'hh:mm:ss',
 	dateStampFormat: 'YYYY-MM-DD',
 	lastFormat: '',
-	newLine: false
+	newLine: false,
+	indentAfterNewLine: false
 }
 
 // logThreshold: 0 ... only error messages
@@ -68,8 +70,9 @@ export default class TimeStamperPlugin extends Plugin {
 				const now = new Date();
 				const stamp = moment(now).format(this.settings.timeStampFormat);
 				if (this.settings.newLine) {
-					editor.replaceSelection(stamp + '\n');
-					logger('new line', 9);
+					const suffix = this.settings.indentAfterNewLine ? '\n\t' : '\n';
+					editor.replaceSelection(stamp + suffix);
+					logger('new line' + (this.settings.indentAfterNewLine ? ' with indent' : ''), 9);
 				}
 				else {
 					editor.replaceSelection(stamp);
@@ -85,8 +88,9 @@ export default class TimeStamperPlugin extends Plugin {
 				const now = new Date();
 				const stamp = moment(now).format(this.settings.dateStampFormat);
 				if (this.settings.newLine) {
-					editor.replaceSelection(stamp + '\n');
-					logger('new line', 9);
+					const suffix = this.settings.indentAfterNewLine ? '\n\t' : '\n';
+					editor.replaceSelection(stamp + suffix);
+					logger('new line' + (this.settings.indentAfterNewLine ? ' with indent' : ''), 9);
 				}
 				else {
 					editor.replaceSelection(stamp);
@@ -138,8 +142,9 @@ class TimeStamperModal extends Modal {
 			const stampFormat = formatComponent.getValue();
 			const stamp = moment(now).format(stampFormat);
 			if (_this.settings.newLine) {
-				editor.replaceSelection(stamp + '\n');
-				logger('new line', 9);
+				const suffix = _this.settings.indentAfterNewLine ? '\n\t' : '\n';
+				editor.replaceSelection(stamp + suffix);
+				logger('new line' + (_this.settings.indentAfterNewLine ? ' with indent' : ''), 9);
 			}
 			else {
 				editor.replaceSelection(stamp);
@@ -243,7 +248,7 @@ class TimeStamperSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				}));
 
-		new Setting(containerEl)
+		const newLineSetting = new Setting(containerEl)
 		    .setName('Insert line break')
 			.setDesc('Add a line break after the time/date stamp')
 			.addToggle(toggle => toggle
@@ -251,7 +256,27 @@ class TimeStamperSettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					logger('Settings update - Insert Line Break: ' + value, 5);
 					this.plugin.settings.newLine = value;
+					// Disable indent if line break is disabled
+					if (!value) {
+						this.plugin.settings.indentAfterNewLine = false;
+					}
 					await this.plugin.saveSettings();
+					// Refresh the display to update indent setting visibility
+					this.display();
 				}));
+
+		const indentSetting = new Setting(containerEl)
+			.setName('Add indentation after line break')
+			.setDesc('Add a tab indentation after the line break')
+			.addToggle(toggle => {
+				toggle
+					.setValue(this.plugin.settings.indentAfterNewLine)
+					.setDisabled(!this.plugin.settings.newLine)
+					.onChange(async (value) => {
+						logger('Settings update - Add Indentation After Line Break: ' + value, 5);
+						this.plugin.settings.indentAfterNewLine = value;
+						await this.plugin.saveSettings();
+					});
+			});
 	}
 }

@@ -15,6 +15,7 @@ The plugin comes with some options for configuration:
 - A default template string for quick-insert of a time stamp (via command or configurable hot-key)
 - A default template string for quick-insert of a date stamp (via command or configurable hot-key)
 - An option to specify if a line-break should be added after the inserted time/date stamp automatically
+- An option to indent the new line (if line-break is toggled on)
 
 ![PluginSettings](res/settings.png)
 
