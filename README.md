@@ -28,7 +28,7 @@ Hot-Keys can be configured for in the Obsidian Hotkeys-Options Page for quick ac
 
 ## Format String
 The plugin uses moment.js which comes with Obsidian by default, hence all known tokens from moment.js can be used to create your customized time/date stamp:
-[Full ist of supported tokens](https://momentjscom.readthedocs.io/en/latest/moment/04-displaying/01-format/)
+[Full list of supported tokens](https://momentjscom.readthedocs.io/en/latest/moment/04-displaying/01-format/)
 
 |                             | Token              | Output                                   |
 | --------------------------- | ------------------ | ---------------------------------------- |
