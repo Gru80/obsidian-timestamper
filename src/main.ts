@@ -54,6 +54,7 @@ export default class TimeStamperPlugin extends Plugin {
 
 		this.addCommand({
 			id: 'obsidian-custom-timestamp',
+			icon: 'calendar-cog',
 			name: 'Insert custom time/date stamp',
 			editorCallback: (editor) => {
 				new TimeStamperModal(this.app, editor, this.settings, this).open();
@@ -63,6 +64,7 @@ export default class TimeStamperPlugin extends Plugin {
 
 		this.addCommand({
 			id: 'obsidian-fast-timestamp',
+			icon: 'clock-4',
 			name: 'Insert preconfigured time stamp',
 			editorCallback: (editor) => {
 				const now = new Date();
@@ -80,6 +82,7 @@ export default class TimeStamperPlugin extends Plugin {
 
 		this.addCommand({
 			id: 'obsidian-fast-datestamp',
+			icon: 'calendar-1',
 			name: 'Insert preconfigured date stamp',
 			editorCallback: (editor) => {
 				const now = new Date();
