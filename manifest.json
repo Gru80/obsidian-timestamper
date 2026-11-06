@@ -6,5 +6,6 @@
 	"isDesktopOnly": false,
 	"minAppVersion": "0.12.17",
 	"name": "TimeStamper",
-	"version": "1.3.0"
+	"version": "1.4.0",
+	"fundingUrl": "https://buymeacoffee.com/gru80"
 }
