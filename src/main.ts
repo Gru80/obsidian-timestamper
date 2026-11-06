@@ -4,7 +4,7 @@
  * V1.1.0 - Migrated from dateformat to moment.js
  * V1.2.0 - Introduced option for linebreak after insert
  * V1.3.0 - Enter-key in the text field closes the dialog and inserts time/date stamp
- * V1.4.0 - Added icons for mobile app toolbar 
+ * V1.4.0 - Added icons for mobile app toolbar, added i18n support for locale specific stamps
  * 
  */
 
@@ -25,6 +25,7 @@ interface OtsPluginSettings {
 	timeStampFormat: string;
 	dateStampFormat: string;
 	lastFormat: string;
+	localeFormat: string;
 	newLine: boolean;
 }
 
@@ -32,14 +33,16 @@ const DEFAULT_SETTINGS: OtsPluginSettings = {
 	timeStampFormat: 'hh:mm:ss',
 	dateStampFormat: 'YYYY-MM-DD',
 	lastFormat: '',
+	localeFormat: moment.locale(),
 	newLine: false
 }
+
 
 // logThreshold: 0 ... only error messages
 //               9 ... verbose output
 const logThreshold = 9;
 const logger = (logString: string, logLevel=0): void => {if (logLevel <= logThreshold) console.log ('TimeStamper: ' + logString)};
-const version = '1.4.0-0001'
+const version = '1.4.0-0006'
 
 export default class TimeStamperPlugin extends Plugin {
 	settings: OtsPluginSettings;
@@ -68,7 +71,7 @@ export default class TimeStamperPlugin extends Plugin {
 			name: 'Insert preconfigured time stamp',
 			editorCallback: (editor) => {
 				const now = new Date();
-				const stamp = moment(now).format(this.settings.timeStampFormat);
+				const stamp = moment(now).locale(this.settings.localeFormat).format(this.settings.timeStampFormat);
 				if (this.settings.newLine) {
 					editor.replaceSelection(stamp + '\n');
 					logger('new line', 9);
@@ -86,7 +89,7 @@ export default class TimeStamperPlugin extends Plugin {
 			name: 'Insert preconfigured date stamp',
 			editorCallback: (editor) => {
 				const now = new Date();
-				const stamp = moment(now).format(this.settings.dateStampFormat);
+				const stamp = moment(now).locale(this.settings.localeFormat).format(this.settings.dateStampFormat);
 				if (this.settings.newLine) {
 					editor.replaceSelection(stamp + '\n');
 					logger('new line', 9);
@@ -109,6 +112,7 @@ export default class TimeStamperPlugin extends Plugin {
 		logger('  - timeStampFormat: ' + this.settings.timeStampFormat, 6);
 		logger('  - dateStampFormat: ' + this.settings.dateStampFormat, 6);
 		logger('  - lastFormat:      ' + this.settings.lastFormat, 6);
+		logger('  - localeFormat:    ' + this.settings.localeFormat, 6);
 	}
 
 	async saveSettings() {
@@ -139,7 +143,7 @@ class TimeStamperModal extends Modal {
 		const doStamp = (): void => {
 			const now = new Date();
 			const stampFormat = formatComponent.getValue();
-			const stamp = moment(now).format(stampFormat);
+			const stamp = moment(now).locale(this.settings.localeFormat).format(stampFormat);
 			if (_this.settings.newLine) {
 				editor.replaceSelection(stamp + '\n');
 				logger('new line', 9);
@@ -245,6 +249,66 @@ class TimeStamperSettingTab extends PluginSettingTab {
 					this.plugin.settings.timeStampFormat = value;
 					await this.plugin.saveSettings();
 				}));
+		
+		/* new Setting(containerEl)
+			.setName('Locale Format')
+			.setDesc('Use a custom language code, for example: en, de, en-GB or de-AT')
+			.addText(text => {
+		
+				text.setValue(this.plugin.settings.localeFormat);
+		
+				const validate = () => {
+					const locale = text.getValue().trim().toLowerCase();
+					const isValid = moment.locales().includes(locale);
+				
+					if (isValid) {
+						text.inputEl.style.backgroundColor = '';
+						text.inputEl.style.borderColor = '';
+					} else {
+						text.inputEl.style.backgroundColor = 'rgba(255, 0, 0, 0.2)';
+						text.inputEl.style.borderColor = 'red';
+					}
+				};
+		
+				// Validate existing value when settings are opened
+				validate();
+		
+				// Validate when focus leaves the input field
+				text.inputEl.addEventListener('blur', validate);
+		
+				text.onChange(async (value) => {
+					logger('Settings update - Locale Format: ' + value, 5);
+					this.plugin.settings.localeFormat = value;
+					await this.plugin.saveSettings();
+				});
+			}); */
+
+		new Setting(containerEl)
+			.setName('Locale Format')
+			.setDesc('Use a custom language code, for example: en, de, en-GB or de-AT')
+			.addText(text => {
+
+				text.setValue(this.plugin.settings.localeFormat);
+
+				text.inputEl.addEventListener('blur', async () => {
+					const value = text.getValue().trim();
+					const locale = value.toLowerCase();
+
+					const isValid = moment.locales().includes(locale);
+
+					text.inputEl.classList.toggle(
+						'timestamper-invalid-input',
+						!isValid
+					);
+
+					if (isValid) {
+						logger('Settings update - Locale Format: ' + value, 5);
+
+						this.plugin.settings.localeFormat = value;
+						await this.plugin.saveSettings();
+					}
+				});
+			});
 
 		new Setting(containerEl)
 		    .setName('Insert line break')
