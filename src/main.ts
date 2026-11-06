@@ -4,10 +4,11 @@
  * V1.1.0 - Migrated from dateformat to moment.js
  * V1.2.0 - Introduced option for linebreak after insert
  * V1.3.0 - Enter-key in the text field closes the dialog and inserts time/date stamp
+ * V1.4.0 - Added icons for mobile app toolbar 
  * 
  */
 
-import { settings } from 'cluster';
+
 import {
 	App,
 	ButtonComponent,
@@ -18,7 +19,6 @@ import {
 	PluginSettingTab,
 	Setting,
 	moment,
-	View
 } from 'obsidian';
 
 interface OtsPluginSettings {
@@ -39,7 +39,7 @@ const DEFAULT_SETTINGS: OtsPluginSettings = {
 //               9 ... verbose output
 const logThreshold = 9;
 const logger = (logString: string, logLevel=0): void => {if (logLevel <= logThreshold) console.log ('TimeStamper: ' + logString)};
-const version = '1.3.0-0002'
+const version = '1.4.0-0001'
 
 export default class TimeStamperPlugin extends Plugin {
 	settings: OtsPluginSettings;
