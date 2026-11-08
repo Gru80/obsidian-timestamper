@@ -86,3 +86,7 @@ The plugin uses moment.js which comes with Obsidian by default, hence all known 
 |                             | ZZ                 | -0700 -0600 ... +0600 +0700              |
 | Unix  Timestamp             | X                  | 1360013296                               |
 | Unix  Millisecond Timestamp | x                  | 1,36001E+12                              |
+
+---
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=flat&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/Gru80)
+
